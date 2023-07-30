@@ -5,6 +5,8 @@ import com.app.library.model.Author;
 import com.app.library.model.Category;
 import jakarta.validation.constraints.NotBlank;
 
+import java.util.Set;
+
 
 public class NewBook {
 
@@ -15,10 +17,10 @@ public class NewBook {
     private String ISBN;
 
     @NotBlank
-    private Author author;
+    private Set<Author> author;
 
     @NotBlank
-    private Category category;
+    private Set<Category> category;
 
     public String getTitle() {
         return title;
@@ -28,11 +30,11 @@ public class NewBook {
         return ISBN;
     }
 
-    public Author getAuthor() {
+    public Set<Author> getAuthor() {
         return author;
     }
 
-    public Category getCategory() {
+    public Set<Category> getCategory() {
         return category;
     }
 }

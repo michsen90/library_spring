@@ -2,7 +2,8 @@ package com.app.library.model;
 
 import jakarta.persistence.*;
 
-import java.util.HashSet;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -28,13 +29,17 @@ public class Book {
     @JoinTable(name = "category_book", joinColumns = @JoinColumn(name = "book_id"), inverseJoinColumns = @JoinColumn(name = "category_id"))
     private Set<Category> categories;
 
+    @OneToMany(cascade = CascadeType.ALL)
+    private List<BookItem> bookItems;
+
     public Book(){}
 
-    public Book( final String title, final String ISBN) {
+    public Book(final String title, final String ISBN, final Set<Author> authors, final Set<Category> categories) {
         this.title = title;
         this.ISBN = ISBN;
-        this.authors = new HashSet<>();
-        this.categories = new HashSet<>();
+        this.authors = authors;
+        this.categories = categories;
+        this.bookItems = new ArrayList<>();
     }
 
     public Long getId() {
@@ -77,7 +82,17 @@ public class Book {
         this.categories = categories;
     }
 
-    public void addCategory(Category category){ this.categories.add(category); }
+    public void addCategory(final Category category){ this.categories.add(category); }
 
-    public void addAuthor(Author author){ this.authors.add(author); }
+    public void addAuthor(final Author author){ this.authors.add(author); }
+
+    public List<BookItem> getBookItems() {
+        return bookItems;
+    }
+
+    public void setBookItems(final List<BookItem> bookItems) {
+        this.bookItems = bookItems;
+    }
+
+    public void addBookItem(final BookItem bookItem){ this.bookItems.add(bookItem); }
 }

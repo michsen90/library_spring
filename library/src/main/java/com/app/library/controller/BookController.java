@@ -1,12 +1,11 @@
 package com.app.library.controller;
 
 import com.app.library.model.Book;
+import com.app.library.model.BookItem;
+import com.app.library.repository.BookItemRepository;
 import com.app.library.repository.BookRepository;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Optional;
@@ -16,9 +15,11 @@ import java.util.Optional;
 public class BookController {
 
     private BookRepository bookRepository;
+    private BookItemRepository bookItemRepository;
 
-    BookController(final BookRepository bookRepository) {
+    BookController(final BookRepository bookRepository, final BookItemRepository bookItemRepository) {
         this.bookRepository = bookRepository;
+        this.bookItemRepository = bookItemRepository;
     }
 
     @GetMapping("/all")
@@ -29,7 +30,7 @@ public class BookController {
     @GetMapping("/{title}")
     public ResponseEntity<List<Book>> getBooksByTitle(@PathVariable String title){
         List<Book> books = bookRepository.findByTitle(title);
-        if(books == null){
+        if(books == null || books.size() == 0){
             return ResponseEntity.notFound().build();
         }
         return ResponseEntity.ok(books);
@@ -38,9 +39,19 @@ public class BookController {
     @GetMapping("/ISBN/{ISBN}")
     public ResponseEntity<?> getBookByISBN(@PathVariable String ISBN){
         Optional<Book> book = bookRepository.findByISBN(ISBN);
-        if (book == null){
+        if (book.equals(Optional.empty())){
             return ResponseEntity.notFound().build();
         }
         return ResponseEntity.ok(book);
     }
+
+    @PostMapping("/{id}/rent_book")
+    public ResponseEntity<?> rentBook(@PathVariable Long id, @RequestBody BookItem bookItem){
+        Optional<Book> book = bookRepository.findById(id);
+        if (book.equals(Optional.empty())){
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok("Book has been rent!");
+    }
+
 }
