@@ -1,0 +1,211 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > AuthenticationController</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">com.app.library.controller</a>
+</div>
+
+<h1>Coverage Summary for Class: AuthenticationController (com.app.library.controller)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">AuthenticationController</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (4/4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (38/38)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package com.app.library.controller;
+&nbsp;
+&nbsp;import com.app.library.config.JwtUtils;
+&nbsp;import com.app.library.config.services.UserDetailsImpl;
+&nbsp;import com.app.library.model.ERole;
+&nbsp;import com.app.library.model.Role;
+&nbsp;import com.app.library.payload.request.LoginRequest;
+&nbsp;import com.app.library.payload.request.SignupRequest;
+&nbsp;import com.app.library.payload.response.JwtResponse;
+&nbsp;import com.app.library.payload.response.MessageResponse;
+&nbsp;import jakarta.validation.Valid;
+&nbsp;import com.app.library.model.User;
+&nbsp;import org.springframework.beans.factory.annotation.Autowired;
+&nbsp;import org.springframework.http.ResponseEntity;
+&nbsp;import org.springframework.security.authentication.AuthenticationManager;
+&nbsp;import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+&nbsp;import org.springframework.security.core.Authentication;
+&nbsp;import org.springframework.security.core.context.SecurityContextHolder;
+&nbsp;import org.springframework.security.crypto.password.PasswordEncoder;
+&nbsp;import org.springframework.web.bind.annotation.PostMapping;
+&nbsp;import org.springframework.web.bind.annotation.RequestBody;
+&nbsp;import org.springframework.web.bind.annotation.RequestMapping;
+&nbsp;import org.springframework.web.bind.annotation.RestController;
+&nbsp;import com.app.library.repository.RoleRepository;
+&nbsp;import com.app.library.repository.UserRepository;
+&nbsp;
+&nbsp;import java.util.HashSet;
+&nbsp;import java.util.List;
+&nbsp;import java.util.Set;
+&nbsp;import java.util.stream.Collectors;
+&nbsp;
+&nbsp;@RestController
+&nbsp;@RequestMapping(&quot;/api/auth&quot;)
+<b class="fc">&nbsp;public class AuthenticationController {</b>
+&nbsp;
+&nbsp;    @Autowired
+&nbsp;    private AuthenticationManager authenticationManager;
+&nbsp;    @Autowired
+&nbsp;    private UserRepository userRepository;
+&nbsp;    @Autowired
+&nbsp;    private RoleRepository roleRepository;
+&nbsp;    @Autowired
+&nbsp;    private PasswordEncoder encoder;
+&nbsp;    @Autowired
+&nbsp;    private JwtUtils jwtUtils;
+&nbsp;
+&nbsp;
+&nbsp;    @PostMapping(&quot;/signin&quot;)
+&nbsp;    public ResponseEntity&lt;?&gt; authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
+<b class="fc">&nbsp;        Authentication authentication = authenticationManager.authenticate(</b>
+<b class="fc">&nbsp;                new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword())</b>
+&nbsp;        );
+<b class="fc">&nbsp;        SecurityContextHolder.getContext().setAuthentication(authentication);</b>
+<b class="fc">&nbsp;        String jwt = jwtUtils.generateToken(authentication);</b>
+&nbsp;
+<b class="fc">&nbsp;        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();</b>
+<b class="fc">&nbsp;        List&lt;String&gt; roles = userDetails.getAuthorities().stream().map(item -&gt; item.getAuthority()).collect(Collectors.toList());</b>
+<b class="fc">&nbsp;        return ResponseEntity.ok(new JwtResponse(jwt, userDetails.getId(), userDetails.getUsername(),</b>
+<b class="fc">&nbsp;                userDetails.getEmail(), roles));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @PostMapping(&quot;/signup&quot;)
+&nbsp;    public ResponseEntity&lt;?&gt; registerUser(@Valid @RequestBody SignupRequest signupRequest) {
+<b class="fc">&nbsp;        if (userRepository.existsByUsername(signupRequest.getUsername())) {</b>
+<b class="fc">&nbsp;            return ResponseEntity.badRequest().body(new MessageResponse(&quot;Error: Username is already exist!&quot;));</b>
+&nbsp;        }
+<b class="fc">&nbsp;        if (userRepository.existsByEmail(signupRequest.getEmail())) {</b>
+<b class="fc">&nbsp;            return ResponseEntity.badRequest().body(new MessageResponse(&quot;Error: Email is already exist!&quot;));</b>
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        User user =</b>
+<b class="fc">&nbsp;                new User(signupRequest.getUsername(), signupRequest.getEmail(), encoder.encode(signupRequest.getPassword()));</b>
+&nbsp;
+<b class="fc">&nbsp;        Set&lt;String&gt; strRoles = signupRequest.getRole();</b>
+<b class="fc">&nbsp;        Set&lt;Role&gt; roles = new HashSet&lt;&gt;();</b>
+&nbsp;
+<b class="fc">&nbsp;        if (strRoles == null || strRoles.size() == 0) {</b>
+<b class="fc">&nbsp;            Role userRole = roleRepository.findByName(ERole.USER)</b>
+<b class="fc">&nbsp;                    .orElseThrow(() -&gt; new RuntimeException(&quot;Error: Role is not found&quot;));</b>
+<b class="fc">&nbsp;            roles.add(userRole);</b>
+<b class="fc">&nbsp;        } else {</b>
+<b class="fc">&nbsp;            strRoles.forEach(role -&gt; {</b>
+<b class="fc">&nbsp;                switch (role) {</b>
+&nbsp;                    case &quot;ADMIN&quot;:
+<b class="fc">&nbsp;                        Role adminRole = roleRepository.findByName(ERole.ADMIN)</b>
+<b class="fc">&nbsp;                                .orElseThrow(() -&gt; new RuntimeException(&quot;Error: Role is not found&quot;));</b>
+<b class="fc">&nbsp;                        roles.add(adminRole);</b>
+<b class="fc">&nbsp;                        break;</b>
+&nbsp;
+&nbsp;                    case &quot;MODERATOR&quot;:
+<b class="fc">&nbsp;                        Role modRole = roleRepository.findByName(ERole.MODERATOR)</b>
+<b class="fc">&nbsp;                                .orElseThrow(() -&gt; new RuntimeException(&quot;Error: Role is not found&quot;));</b>
+<b class="fc">&nbsp;                        roles.add(modRole);</b>
+<b class="fc">&nbsp;                        break;</b>
+&nbsp;
+&nbsp;                    default:
+<b class="fc">&nbsp;                        Role userRole = roleRepository.findByName(ERole.USER)</b>
+<b class="fc">&nbsp;                                .orElseThrow(() -&gt; new RuntimeException(&quot;Error: Role is not found&quot;));</b>
+<b class="fc">&nbsp;                        roles.add(userRole);</b>
+&nbsp;                }
+&nbsp;            });
+&nbsp;        }
+<b class="fc">&nbsp;        user.setRoles(roles);</b>
+<b class="fc">&nbsp;        User savedUser = userRepository.save(user);</b>
+<b class="fc">&nbsp;        return ResponseEntity.ok(savedUser);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2023-07-30 21:50</div>
+</div>
+</body>
+</html>

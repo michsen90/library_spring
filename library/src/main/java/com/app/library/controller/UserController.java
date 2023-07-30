@@ -25,7 +25,7 @@ public class UserController {
     @GetMapping("/{id}")
     public ResponseEntity<?> getUserById(@PathVariable Long id){
         Optional<User> user = userRepository.findById(id);
-        if (user == null){
+        if (user.equals(Optional.empty())){
             return ResponseEntity.notFound().build();
         }
         return ResponseEntity.ok(user);
@@ -34,7 +34,7 @@ public class UserController {
 
     @PutMapping("/{id}")
     public ResponseEntity<?> updateUser(@PathVariable Long id, @RequestBody User user){
-        if (userRepository.findById(id) == null){
+        if (userRepository.findById(id).equals(Optional.empty())){
             return ResponseEntity.notFound().build();
         }
         userRepository.findById(id).ifPresent(u -> {
@@ -47,7 +47,7 @@ public class UserController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity deleteUser(@PathVariable Long id){
-        if (userRepository.findById(id) == null) {
+        if (userRepository.findById(id).equals(Optional.empty())) {
             return ResponseEntity.notFound().build();
         }
         userRepository.findById(id).ifPresent(user -> {

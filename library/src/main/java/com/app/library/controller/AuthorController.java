@@ -34,16 +34,16 @@ public class AuthorController {
     @GetMapping("/{id}")
     public ResponseEntity<?> getAuthorById(@PathVariable Long id){
         Optional<Author> author = authorRepository.findById(id);
-        if (author == null){
+        if (author.equals(Optional.empty())){
             return ResponseEntity.notFound().build();
         }
         return ResponseEntity.ok(author);
     }
 
-    @GetMapping("/{lastname}")
+    @GetMapping("/byLastname/{lastname}")
     public ResponseEntity<Set<Author>> getAuthorsByLastname(@PathVariable String lastname){
         Set<Author> authors = authorRepository.findByLastname(lastname);
-        if (authors == null){
+        if (authors.size() == 0){
             return ResponseEntity.notFound().build();
         }
         return ResponseEntity.ok(authors);

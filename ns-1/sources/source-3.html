@@ -1,0 +1,160 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > BookController</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">com.app.library.controller</a>
+</div>
+
+<h1>Coverage Summary for Class: BookController (com.app.library.controller)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">BookController</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (5/5)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (16/16)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package com.app.library.controller;
+&nbsp;
+&nbsp;import com.app.library.model.Book;
+&nbsp;import com.app.library.model.BookItem;
+&nbsp;import com.app.library.repository.BookItemRepository;
+&nbsp;import com.app.library.repository.BookRepository;
+&nbsp;import org.springframework.http.ResponseEntity;
+&nbsp;import org.springframework.web.bind.annotation.*;
+&nbsp;
+&nbsp;import java.util.List;
+&nbsp;import java.util.Optional;
+&nbsp;
+&nbsp;@RestController
+&nbsp;@RequestMapping(&quot;/book&quot;)
+&nbsp;public class BookController {
+&nbsp;
+&nbsp;    private BookRepository bookRepository;
+&nbsp;    private BookItemRepository bookItemRepository;
+&nbsp;
+<b class="fc">&nbsp;    BookController(final BookRepository bookRepository, final BookItemRepository bookItemRepository) {</b>
+<b class="fc">&nbsp;        this.bookRepository = bookRepository;</b>
+<b class="fc">&nbsp;        this.bookItemRepository = bookItemRepository;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @GetMapping(&quot;/all&quot;)
+&nbsp;    public ResponseEntity&lt;List&lt;Book&gt;&gt; getAllBooks(){
+<b class="fc">&nbsp;        return ResponseEntity.ok(bookRepository.findAll());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @GetMapping(&quot;/{title}&quot;)
+&nbsp;    public ResponseEntity&lt;List&lt;Book&gt;&gt; getBooksByTitle(@PathVariable String title){
+<b class="fc">&nbsp;        List&lt;Book&gt; books = bookRepository.findByTitle(title);</b>
+<b class="fc">&nbsp;        if(books == null || books.size() == 0){</b>
+<b class="fc">&nbsp;            return ResponseEntity.notFound().build();</b>
+&nbsp;        }
+<b class="fc">&nbsp;        return ResponseEntity.ok(books);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @GetMapping(&quot;/ISBN/{ISBN}&quot;)
+&nbsp;    public ResponseEntity&lt;?&gt; getBookByISBN(@PathVariable String ISBN){
+<b class="fc">&nbsp;        Optional&lt;Book&gt; book = bookRepository.findByISBN(ISBN);</b>
+<b class="fc">&nbsp;        if (book.equals(Optional.empty())){</b>
+<b class="fc">&nbsp;            return ResponseEntity.notFound().build();</b>
+&nbsp;        }
+<b class="fc">&nbsp;        return ResponseEntity.ok(book);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @PostMapping(&quot;/{id}/rent_book&quot;)
+&nbsp;    public ResponseEntity&lt;?&gt; rentBook(@PathVariable Long id, @RequestBody BookItem bookItem){
+<b class="fc">&nbsp;        Optional&lt;Book&gt; book = bookRepository.findById(id);</b>
+<b class="fc">&nbsp;        if (book.equals(Optional.empty())){</b>
+<b class="fc">&nbsp;            return ResponseEntity.notFound().build();</b>
+&nbsp;        }
+<b class="fc">&nbsp;        return ResponseEntity.ok(&quot;Book has been rent!&quot;);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2023-07-30 21:50</div>
+</div>
+</body>
+</html>
