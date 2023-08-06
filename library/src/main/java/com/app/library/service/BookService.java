@@ -21,10 +21,13 @@ public class BookService {
         return savedBook;
     }
 
-    public Book updateBook(Long id, Book book){
+    public Book updateBook(Long id, Book book, int numberOfNewBook){
         Book bookToUpdate = bookRepository.findBookById(id);
         bookToUpdate.setTitle(book.getTitle());
         bookToUpdate.setISBN(book.getISBN());
+        bookToUpdate.setAuthors(book.getAuthors());
+        bookToUpdate.setCategories(book.getCategories());
+        bookToUpdate = updateBookItemsForBook(id, numberOfNewBook);
         Book updatedBook = bookRepository.save(bookToUpdate);
         return updatedBook;
     }
@@ -41,6 +44,19 @@ public class BookService {
         bookToUpdate.setCategories(book.getCategories());
         Book updateBook = bookRepository.save(bookToUpdate);
         return updateBook;
+    }
+
+    public Book updateBookItemsForBook(Long id, int numberOfNewBooks){
+        Book bookToUpdate = bookRepository.findBookById(id);
+        if (numberOfNewBooks == -1){
+            return bookToUpdate;
+        }
+        for (int i = 0; i< numberOfNewBooks; i++){
+            BookItem newBookItem = new BookItem();
+            bookToUpdate.addBookItem(newBookItem);
+        }
+        Book updatedBook = bookRepository.save(bookToUpdate);
+        return updatedBook;
     }
 
     public void deleteBook(Long id){

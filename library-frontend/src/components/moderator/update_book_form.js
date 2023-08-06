@@ -1,18 +1,19 @@
 import React, { useEffect, useState } from "react";
 import { API } from "../../api_service";
-import { Button, Col, Form, Row } from "react-bootstrap";
+import { Accordion, Button, Col, Form, Row } from "react-bootstrap";
+import AccordionBody from "react-bootstrap/esm/AccordionBody";
 
-function UpdateBookForm({ selectedBook }) {
+function UpdateBookForm({ handleCloseFormUpdateBook, bookToUpdate, setUpdatedBook }) {
 
     const [validated, setValidated] = useState(false);
-    const [title, setTitle] = useState(selectedBook.title);
-    const [ISBN, setISBN] = useState(selectedBook.ISBN);
-    const [selectedAuthor, setSelectedAuthor] = useState(selectedBook.authors[0]);
-    const [selectedCategory, setSelectedCategory] = useState(selectedBook.categories[0]);
-
+    const [title, setTitle] = useState(bookToUpdate.title);
+    const [ISBN, setISBN] = useState(bookToUpdate.isbn);
+    const [selectedAuthors, setSelectedAuthors] = useState(bookToUpdate.authors);
+    const [selectedCategories, setSelectedCategories] = useState(bookToUpdate.categories);
+    const [handleAddBookItem, setHandleAddBookItem] = useState(false);
     const [authors, setAuthors] = useState([]);
     const [categories, setCategories] = useState([]);
-    
+    const [numberNewBook, setNumberNewBook] = useState(-1);
 
     useEffect(() => {
         API.getAllAuthors().then(response => setAuthors(response.data)).catch(err => console.log(err));
@@ -22,31 +23,67 @@ function UpdateBookForm({ selectedBook }) {
         API.getAllCategories().then(response => setCategories(response.data)).catch(err => console.log(err));
     }, []);
 
-    const handleAuthor = evt => {
-        setSelectedAuthor(JSON.parse(evt.target.value));
-    }
-
     const handleSubmit = evt => {
         evt.preventDefault();
-        const form = evt.currentTarget;
-        if (form.checkValidity() === false) {
-            //todo
-        }
-        const authorsToSave = [];
-        const categoriesToSave = [];
-        authorsToSave.push(selectedAuthor);
-        categoriesToSave.push(selectedCategory);
         setValidated(true);
-        API.createBook({title: title, isbn: ISBN, authors: authorsToSave, categories: categoriesToSave})
-            .then(response => setCreatedBook(response.data))
+        API.updateBookAllFileds(bookToUpdate.id, 
+            {id: bookToUpdate.id, title: title, isbn: ISBN, authors: selectedAuthors, categories: selectedCategories, bookItems: bookToUpdate.bookItems, numberOfNewBook: numberNewBook})
+            .then(response => {
+                setUpdatedBook(response.data);
+                handleCloseFormUpdateBook();
+            })
             .catch(err => console.log(err));
-        
-        handleCloseFormNewBook();
+    }
+
+    const addAuthor = evt => {
+        const value = evt.target.value;
+        const isChecked = evt.target.checked;
+        var updateAuthors = [...selectedAuthors];
+        if (isChecked) {
+            if (selectedAuthors.filter(author => author.id === value.id) > 0) {
+
+            } else {
+                updateAuthors = ([...selectedAuthors, JSON.parse(value)]);
+            }
+        } else {
+            updateAuthors.splice(updateAuthors.indexOf(value), 1);
+        }
+
+        setSelectedAuthors(updateAuthors);
+    }
+
+    const addCategory = evt => {
+        const value = evt.target.value;
+        const isChecked = evt.target.checked;
+        var updateCategories = [...selectedCategories];
+        if (isChecked) {
+            if (selectedCategories.filter(category => category.id === value.id) > 0) {
+
+            } else {
+                updateCategories = ([...selectedCategories, JSON.parse(value)]);
+            }
+        } else {
+            updateCategories.splice(updateCategories.indexOf(value), 1);
+        }
+
+        setSelectedCategories(updateCategories);
+    }
+
+    const authorExist = id => {
+        return selectedAuthors.some(function (author) {
+            return author.id === id;
+        });
+    }
+
+    const categoryExist = id => {
+        return selectedCategories.some(function (category) {
+            return category.id === id;
+        });
     }
 
     return (
         <React.Fragment>
-            <Form noValidate validated={validated} onSubmit={handleSubmit} style={{textAlign: "center"}}>
+            <Form noValidate validated={validated} onSubmit={handleSubmit} style={{ textAlign: "center" }}>
                 <Row className="mb-3">
                     <Form.Group as={Col} controlId="validationTitle">
                         <Form.Label>Title</Form.Label>
@@ -60,26 +97,57 @@ function UpdateBookForm({ selectedBook }) {
                     </Form.Group>
                 </Row>
                 <Row className="mb-3">
-                    <Form.Select aria-label="Authors" onChange={handleAuthor} value={selectedAuthor}>
-                        <option>Select author</option>
-                        {authors && authors.map(author => {
-                            return (
-                                <option key={author.id} value={JSON.stringify(author)}>{author.firstname} {author.lastname}</option>
-                            )
-                        })}
-                    </Form.Select>
+                    <Accordion>
+                        <Accordion.Item eventKey="authors">
+                            <Accordion.Header>Authors</Accordion.Header>
+                            <Accordion.Body>
+                                {authors && authors.map(author => {
+                                    return (
+                                        <Form.Check type="checkbox" key={author.id} value={JSON.stringify(author)}
+                                            onChange={evt => addAuthor(evt)} label={`${author.firstname} ${author.lastname}`}
+                                            checked={authorExist(author.id)}
+                                        />
+                                    )
+                                })}
+                            </Accordion.Body>
+                        </Accordion.Item>
+                    </Accordion>
                 </Row>
                 <Row className="mb-3">
-                    <Form.Select aria-label="Categories" onChange={evt => setSelectedCategory(JSON.parse(evt.target.value))} value={selectedCategory} >
-                        <option >Select category</option>
-                        {categories && categories.map(category => {
-                            return (
-                                <option key={category.id} value={JSON.stringify(category)} >{category.bookType}</option>
-                            )
-                        })}
-                    </Form.Select>
+                    <Accordion>
+                        <Accordion.Item eventKey="categories">
+                            <Accordion.Header>Categories</Accordion.Header>
+                            <Accordion.Body>
+                                {categories && categories.map(category => {
+                                    return (
+                                        <Form.Check type="checkbox" key={category.id} value={JSON.stringify(category)}
+                                            onChange={evt => addCategory(evt)} label={`${category.bookType}`}
+                                            checked={categoryExist(category.id)}
+                                        />
+                                    )
+                                })}
+                            </Accordion.Body>
+                        </Accordion.Item>
+                    </Accordion>
                 </Row>
-                <Button type="submit">Create book</Button>
+                <Row className="mb-3">
+                    <Accordion>
+                        <Accordion.Item eventKey="bookItems">
+                            <Accordion.Header>Book Items</Accordion.Header>
+                            <AccordionBody>
+                                <h6>Enter if you want to update number of books!</h6>
+                                <Button variant="outline-success" onClick={() => setHandleAddBookItem(!handleAddBookItem)}>Add book item/s</Button>
+                                {handleAddBookItem ?
+                                    <Form.Group as={Col} controlId="validationNumberOfBook" style={{marginTop: "10px"}}>
+                                        <Form.Label>Number of books</Form.Label>
+                                        <Form.Control required type="text" placeholder="Enter number of book" value={numberNewBook} onChange={evt => setNumberNewBook(evt.target.value)} />
+                                    </Form.Group>
+                                    : null}
+                            </AccordionBody>
+                        </Accordion.Item>
+                    </Accordion>
+                </Row>
+                <Button type="submit">Update book</Button>
             </Form>
         </React.Fragment>
     );

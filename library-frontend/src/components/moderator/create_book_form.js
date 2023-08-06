@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { API } from "../../api_service";
-import { Button, Col, Form, Row } from "react-bootstrap";
+import { Alert, Button, Col, Form, Row } from "react-bootstrap";
 
 function CreateBookForm({ handleCloseFormNewBook, setCreatedBook }) {
 
@@ -9,10 +9,11 @@ function CreateBookForm({ handleCloseFormNewBook, setCreatedBook }) {
     const [ISBN, setISBN] = useState('');
     const [selectedAuthor, setSelectedAuthor] = useState('');
     const [selectedCategory, setSelectedCategory] = useState('');
+    const [alertBookExist, setAlertBookExist] = useState(false);
 
     const [authors, setAuthors] = useState([]);
     const [categories, setCategories] = useState([]);
-    
+
 
     useEffect(() => {
         API.getAllAuthors().then(response => setAuthors(response.data)).catch(err => console.log(err));
@@ -26,27 +27,47 @@ function CreateBookForm({ handleCloseFormNewBook, setCreatedBook }) {
         setSelectedAuthor(JSON.parse(evt.target.value));
     }
 
+    const handleCategory = evt => {
+        setSelectedCategory(JSON.parse(evt.target.value));
+    }
+
     const handleSubmit = evt => {
         evt.preventDefault();
-        const form = evt.currentTarget;
-        if (form.checkValidity() === false) {
-            //todo
-        }
-        const authorsToSave = [];
-        const categoriesToSave = [];
-        authorsToSave.push(selectedAuthor);
-        categoriesToSave.push(selectedCategory);
-        setValidated(true);
-        API.createBook({title: title, isbn: ISBN, authors: authorsToSave, categories: categoriesToSave})
-            .then(response => setCreatedBook(response.data))
-            .catch(err => console.log(err));
-        
-        handleCloseFormNewBook();
+        API.checkIfBookCanBeCreated(ISBN).then(response => {
+            if (response.data === "True") {
+                setValidated(true);
+                setAlertBookExist(false);
+                const authorsToSave = [];
+                const categoriesToSave = [];
+                authorsToSave.push(selectedAuthor);
+                categoriesToSave.push(selectedCategory);
+                API.createBook({ title: title, isbn: ISBN, authors: authorsToSave, categories: categoriesToSave })
+                    .then(response => {
+                        setCreatedBook(response.data)
+                        handleCloseFormNewBook();
+                    })
+                    .catch(err => console.log(err.data));
+            } else if (response.data === "False") {
+                setValidated(false);
+                setAlertBookExist(true);
+            } else {
+                setValidated(false);
+            }
+        }).catch(err => console.log(err));
+
+
+
     }
 
     return (
         <React.Fragment>
-            <Form noValidate validated={validated} onSubmit={handleSubmit} style={{textAlign: "center"}}>
+            {alertBookExist ?
+                <Alert key="danger-book-exist" variant="danger">
+                    Book already exist!
+                </Alert>
+                : null}
+
+            <Form noValidate validated={validated} onSubmit={handleSubmit} style={{ textAlign: "center" }}>
                 <Row className="mb-3">
                     <Form.Group as={Col} controlId="validationTitle">
                         <Form.Label>Title</Form.Label>
@@ -70,7 +91,7 @@ function CreateBookForm({ handleCloseFormNewBook, setCreatedBook }) {
                     </Form.Select>
                 </Row>
                 <Row className="mb-3">
-                    <Form.Select aria-label="Categories" onChange={evt => setSelectedCategory(JSON.parse(evt.target.value))} value={selectedCategory} >
+                    <Form.Select aria-label="Categories" onChange={handleCategory}  >
                         <option >Select category</option>
                         {categories && categories.map(category => {
                             return (

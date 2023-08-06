@@ -79,4 +79,42 @@ export class API{
             }});
     }
 
+    static async getBookByISBN(ISBN){
+      const token = sessionStorage.getItem('Authorization');
+      return await axios.get(`http://localhost:8080/book/ISBN/${ISBN}`, {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer Bearer ${token}`
+        }});
+    }
+
+    static async checkIfBookCanBeCreated(ISBN){
+      const token = sessionStorage.getItem('Authorization');
+      return await axios.get(`http://localhost:8080/moderator/book/ISBN/${ISBN}`, {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer Bearer ${token}`
+        }});
+    }
+
+    static async updateBookAllFileds(id, body){
+      const token = sessionStorage.getItem('Authorization');
+      return await axios.put(`http://localhost:8080/moderator/book/${id}`, JSON.stringify(body), {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer Bearer ${token}`
+        }
+      })
+    }
+
+    static async updateBooItemsForBook(id, body){
+      const token = sessionStorage.getItem('Authorization');
+      return await axios.put(`http://localhost:8080/moderator/book/${id}/bookItems`, JSON.stringify(body), {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer Bearer ${token}`
+        }
+      })
+    }
+
 }

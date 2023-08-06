@@ -25,7 +25,7 @@ class UserControllerTest extends LibraryApplicationTests {
     @Autowired
     RoleRepository roleRepository;
 
-    String token = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJtaWNoYWwiLCJpYXQiOjE2OTA3MTA2NDcsImV4cCI6MTY5MDc5NzA0N30.M9PUU7INyH1dIt6lpDUKaGC1i7wH1u8D6gL3n0pH6qQ";
+    String token = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJtaWNoYWwiLCJpYXQiOjE2OTEwMDMzOTMsImV4cCI6MTY5MTA4OTc5M30.3Ksg2q8drnhkMEa2EyLaZPY8ZPuL8nXxDBt-8MI2Wco";
 
 
     @Test
@@ -73,9 +73,8 @@ class UserControllerTest extends LibraryApplicationTests {
 
     @Test
     void updateUserAndUserFoundThenReturn204() throws Exception{
-        userRepository.findByUsername("Changed username").ifPresent(user -> {
-            userRepository.delete(user);
-        });
+        userRepository.findByUsername("Changed username").ifPresent(user -> userRepository.delete(user));
+        userRepository.findByUsername("userToUpdate").ifPresent(user -> userRepository.delete(user));
         String uri = "/user/{id}";
         User user = new User();
         Set<Role> roleSet = new HashSet<>();
@@ -114,9 +113,7 @@ class UserControllerTest extends LibraryApplicationTests {
 
     @Test
     void deleteUserAndUserFoundThenReturn204() throws Exception {
-        userRepository.findByUsername("userToDelete").ifPresent(user -> {
-            userRepository.delete(user);
-        });
+        userRepository.findByUsername("userToDelete").ifPresent(user -> userRepository.delete(user));
         String uri = "/user/{id}";
         User userToDelete = new User();
         Set<Role> roleSet = new HashSet<>();

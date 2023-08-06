@@ -3,32 +3,20 @@ package com.app.library.controller;
 import com.app.library.LibraryApplicationTests;
 import com.app.library.model.Book;
 import com.app.library.model.BookItem;
-import com.app.library.payload.request.LoginRequest;
-import com.app.library.repository.BookRepository;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.aspectj.lang.annotation.Before;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 
 class BookControllerTest extends LibraryApplicationTests {
 
-    String token = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJtaWNoYWwiLCJpYXQiOjE2OTA3MTA2NDcsImV4cCI6MTY5MDc5NzA0N30.M9PUU7INyH1dIt6lpDUKaGC1i7wH1u8D6gL3n0pH6qQ";
+    String token = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJtaWNoYWwiLCJpYXQiOjE2OTEwMDMzOTMsImV4cCI6MTY5MTA4OTc5M30.3Ksg2q8drnhkMEa2EyLaZPY8ZPuL8nXxDBt-8MI2Wco";
 
     @Test
     void getAllBooksandReturn200() throws Exception{

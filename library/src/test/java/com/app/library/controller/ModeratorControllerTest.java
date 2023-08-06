@@ -1,34 +1,27 @@
 package com.app.library.controller;
 
 import com.app.library.LibraryApplicationTests;
-import com.app.library.config.JwtUtils;
 import com.app.library.model.*;
 import com.app.library.payload.request.NewAuthor;
 import com.app.library.repository.AuthorRepository;
 import com.app.library.repository.BookRepository;
 import com.app.library.repository.CategoryRepository;
-import com.app.library.service.AuthorService;
 import com.app.library.service.BookService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class ModeratorControllerTest extends LibraryApplicationTests {
 
-    @Autowired
-    AuthorService authorService;
     @Autowired
     AuthorRepository authorRepository;
 
@@ -40,7 +33,7 @@ class ModeratorControllerTest extends LibraryApplicationTests {
     @Autowired
     BookRepository bookRepository;
 
-    String token = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJtaWNoYWwiLCJpYXQiOjE2OTA3MTA2NDcsImV4cCI6MTY5MDc5NzA0N30.M9PUU7INyH1dIt6lpDUKaGC1i7wH1u8D6gL3n0pH6qQ";
+    String token = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJtaWNoYWwiLCJpYXQiOjE2OTEzNTIzMjgsImV4cCI6MTY5MTQzODcyOH0.4yenqhznMqhpKLQGek9mcnfNgJKmvph9Tv5J7Q-_4cA";
 
     @Test
     void createAuthorAndAuthorExistThenReturn400() throws Exception{
@@ -61,8 +54,7 @@ class ModeratorControllerTest extends LibraryApplicationTests {
 
     @Test
     void createAuthorAndReturnOk200() throws Exception{
-        Author authorToDelete = authorRepository.findByFirstnameAndLastname("New", "Author").orElseThrow();
-        authorService.deleteAuthor(authorToDelete);
+        authorRepository.findByFirstnameAndLastname("New", "Author").ifPresent(author -> authorRepository.delete(author));
         String uri = "/moderator/author";
         NewAuthor newAuthor = new NewAuthor();
         newAuthor.setFirstname("New");
@@ -122,9 +114,7 @@ class ModeratorControllerTest extends LibraryApplicationTests {
     @Test
     void createBookAndReturnOk200() throws Exception{
         Optional<Book> bookToDelete = bookRepository.findByISBN("999999999999999");
-        bookToDelete.ifPresent(book -> {
-            bookService.deleteBook(book.getId());
-        });
+        bookToDelete.ifPresent(book -> bookService.deleteBook(book.getId()));
 
         String uri = "/moderator/book";
         Book book = new Book();
@@ -153,9 +143,7 @@ class ModeratorControllerTest extends LibraryApplicationTests {
     @Transactional
     void updateBookAndReturn200() throws Exception{
         Optional<Book> bookToDelete = bookRepository.findByISBN("11111111111111");
-        bookToDelete.ifPresent(book -> {
-            bookService.deleteBook(book.getId());
-        });
+        bookToDelete.ifPresent(book -> bookService.deleteBook(book.getId()));
         Book bookToUpdate = new Book();
         Set<Author> authors = new HashSet<>();
         authors.add(authorRepository.findById(1L).orElseThrow());
@@ -202,9 +190,7 @@ class ModeratorControllerTest extends LibraryApplicationTests {
     @Transactional
     void updateAuthorsForBookAndReturn200() throws Exception{
         Optional<Book> bookToDelete = bookRepository.findByISBN("22222222222222222");
-        bookToDelete.ifPresent(book -> {
-            bookService.deleteBook(book.getId());
-        });
+        bookToDelete.ifPresent(book -> bookService.deleteBook(book.getId()));
         Book bookToUpdate = new Book();
         Set<Author> authors = new HashSet<>();
         authors.add(authorRepository.findById(1L).orElseThrow());
@@ -318,6 +304,16 @@ class ModeratorControllerTest extends LibraryApplicationTests {
             book.setCategories(book1.getCategories());
             book.setBookItems(book1.getBookItems());
         });
+        if (book.getId() == null){
+            Set<Category> categories = new HashSet<>();
+            categories.add(categoryRepository.findById(1L).orElseThrow());
+            Set<Author> authors = new HashSet<>();
+            authors.add(authorRepository.findById(1L).orElseThrow());
+            book.setTitle("Book to delete");
+            book.setISBN("999999999999999");
+            book.setAuthors(authors);
+            book.setCategories(categories);
+        }
         MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.delete(uri, book.getId())
                         .header(HttpHeaders.AUTHORIZATION, "Bearer Bearer "+token)
                         .accept(MediaType.APPLICATION_JSON)
@@ -340,4 +336,29 @@ class ModeratorControllerTest extends LibraryApplicationTests {
         assertEquals(200, status);
     }
 
+    @Test
+    void getBookByISBNAndReturn200True() throws Exception {
+        String uri = "/moderator/book/ISBN/{ISBN}";
+        String ISBN = "978-83-61187-44-8";
+        MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.get(uri, ISBN)
+                .header(HttpHeaders.AUTHORIZATION, "Bearer Bearer "+token)
+                .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON)).andReturn();
+        int status = mvcResult.getResponse().getStatus();
+        assertEquals(status, 200);
+        assertTrue(mvcResult.getResponse().getContentAsString().contains("True"));
+    }
+
+    @Test
+    void getBookByISBNAndReturn200False() throws Exception {
+        String uri = "/moderator/book/ISBN/{ISBN}";
+        String ISBN = "9788842932796";
+        MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.get(uri, ISBN)
+                .header(HttpHeaders.AUTHORIZATION, "Bearer Bearer "+token)
+                .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON)).andReturn();
+        int status = mvcResult.getResponse().getStatus();
+        assertEquals(status, 200);
+        assertTrue(mvcResult.getResponse().getContentAsString().contains("False"));
+    }
 }

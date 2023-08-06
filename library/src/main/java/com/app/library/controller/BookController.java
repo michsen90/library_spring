@@ -4,6 +4,7 @@ import com.app.library.model.Book;
 import com.app.library.model.BookItem;
 import com.app.library.repository.BookItemRepository;
 import com.app.library.repository.BookRepository;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -40,7 +41,7 @@ public class BookController {
     public ResponseEntity<?> getBookByISBN(@PathVariable String ISBN){
         Optional<Book> book = bookRepository.findByISBN(ISBN);
         if (book.equals(Optional.empty())){
-            return ResponseEntity.notFound().build();
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Book with provided ISBN doesn't exist!");
         }
         return ResponseEntity.ok(book);
     }
