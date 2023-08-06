@@ -6,6 +6,7 @@ import { faTrash } from "@fortawesome/free-solid-svg-icons";
 import { faPenToSquare } from "@fortawesome/free-regular-svg-icons";
 import CreateAuthorForm from "./create_author_form";
 import CreateBookForm from "./create_book_form";
+import UpdateBookForm from "./update_book_form";
 
 function ModeratorLayout() {
     const [books, setBooks] = useState([]);
@@ -14,7 +15,10 @@ function ModeratorLayout() {
     const [showDetails, setShowDetails] = useState(false);
     const [showFormNewAuthor, setShowFormNewAuthor] = useState(false);
     const [showFormNewBook, setShowFormNewBook] = useState(false);
+    const [showFormUpdateBook, setShowFormUpdateBook] = useState(false);
     const [createdBook, setCreatedBook] = useState(null);
+    const [updatedBook, setUpdatedBook] = useState(null);
+    const [selectedBook, setSelectedBook] = useState(null);
 
     useEffect(() => {
         API.getAllBooks()
@@ -29,15 +33,24 @@ function ModeratorLayout() {
         }
     }, [createdBook, books]);
 
+    useEffect( () => {
+        if (updatedBook !== null){
+            setBooks(books.map(book => book.id === updatedBook.id ? updatedBook : book));
+            setUpdatedBook(null);
+        }
+    }, [setBooks, updatedBook, books]);
+
     const handleShowBookDetails = () => setShowDetails(true);
     const handleCloseBookDetails = () => setShowDetails(false);
     const handleShowFormNewAuthor = () => setShowFormNewAuthor(true);
     const handleCloseFormNewAuthor = () => setShowFormNewAuthor(false);
     const handleShowFormNewBook = () => setShowFormNewBook(true);
     const handleCloseFormNewBook = () => setShowFormNewBook(false);
+    const handleShowFormUpdateBook = () => setShowFormUpdateBook(true);
+    const handleCloseFormUpdateBook = () => setShowFormUpdateBook(false);
 
     const removeBook = id => {
-        API.deleteBook(id).then(response => console.log(response)).catch(err => console.log(err));
+        API.deleteBook(id).catch(err => console.log(err));
         const newBooks = books.filter(book => book.id !== id);
         setBooks(newBooks);
     }
@@ -85,6 +98,10 @@ function ModeratorLayout() {
                                         onMouseEnter={() => setSquere(book.id)}
                                         onMouseLeave={() => setSquere(-1)}
                                         beat={squere === book.id ? true : false}
+                                        onClick={() => {
+                                            setSelectedBook(book);
+                                            handleShowFormUpdateBook();
+                                        }}
                                     />
                                     <FontAwesomeIcon
                                         icon={faTrash} style={{ marginLeft: "10px", color: trash === book.id ? "red" : "white" }}
@@ -130,6 +147,17 @@ function ModeratorLayout() {
                 </Modal.Body>
                 <Modal.Footer>
                     <Button variant="info" onClick={handleCloseFormNewBook}>Close</Button>
+                </Modal.Footer>
+            </Modal>
+            <Modal show={showFormUpdateBook} onHide={handleCloseFormUpdateBook} centered>
+                <Modal.Header>
+                    <Modal.Title>Update Book:</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    <UpdateBookForm handleCloseFormUpdateBook={handleCloseFormUpdateBook} bookToUpdate={selectedBook} setUpdatedBook={setUpdatedBook}/>
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button variant="info" onClick={handleCloseFormUpdateBook}>Close</Button>
                 </Modal.Footer>
             </Modal>
         </React.Fragment>

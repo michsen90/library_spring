@@ -10,7 +10,7 @@ function BooksList() {
     const [word, setWord] = useState('');
     const [selectedBook, setSelectedBook] = useState(null);
     const [showRentForm, setShowRentForm] = useState(false);
-    
+
     const updateBooks = () => {
         API.getAllBooks()
             .then(response => {
@@ -92,20 +92,25 @@ function BooksList() {
                             <Row md={3}>
                                 <Col></Col>
                                 <Col>
-                                    <InputGroup className="mb-3" style={{ width: "100%" }}>
-                                        <Form.Control
-                                            value={selectedBook.bookItem.available ? "Available" : "Rented"}
-                                            disabled
-                                            style={{backgroundColor: selectedBook.bookItem.available ? "green" : "red"}}
-                                        />
-                                        <Button 
-                                            variant={selectedBook.bookItem.available ? "outline-success" : "outline-danger"} 
-                                            disabled={!selectedBook.bookItem.available} style={{ minWidth: "50%", cursor: selectedBook.bookItem.available ===true ? "pointer" : "cursor-na"}}
-                                            onClick={handleShowRentForm}
-                                            >
-                                            Rent book
-                                        </Button>
-                                    </InputGroup>
+                                    {selectedBook.bookItems.map(bookItem => {
+                                        return (
+                                            <InputGroup className="mb-3" style={{ width: "100%" }}>
+                                                <Form.Control
+                                                    value={bookItem.available ? "Available" : "Rented"}
+                                                    disabled
+                                                    style={{ backgroundColor: bookItem.available ? "green" : "red", width: "50%"}}
+                                                />
+                                                <Button
+                                                    variant={bookItem.available ? "outline-success" : "outline-danger"}
+                                                    disabled={!bookItem.available} style={{ width: "50%", cursor: bookItem.available === true ? "pointer" : "cursor-na" }}
+                                                    onClick={handleShowRentForm}
+                                                >
+                                                    Rent book ID: {bookItem.id}
+                                                </Button>
+                                            </InputGroup>
+                                        )
+                                    })}
+
                                 </Col>
                                 <Col></Col>
                             </Row>
@@ -119,7 +124,7 @@ function BooksList() {
                     <Modal.Title>Rent a book:</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
-                    <RentBook handleCloseRentForm={handleCloseRentForm} book={selectedBook} reloadBooksList={reloadBooksList}/>
+                    <RentBook handleCloseRentForm={handleCloseRentForm} book={selectedBook} reloadBooksList={reloadBooksList} />
                 </Modal.Body>
                 <Modal.Footer>
                     <Button variant="info" onClick={handleCloseRentForm}>Close</Button>
