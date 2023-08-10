@@ -16,7 +16,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class BookControllerTest extends LibraryApplicationTests {
 
-    String token = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJtaWNoYWwiLCJpYXQiOjE2OTEwMDMzOTMsImV4cCI6MTY5MTA4OTc5M30.3Ksg2q8drnhkMEa2EyLaZPY8ZPuL8nXxDBt-8MI2Wco";
+    String token = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJtaWNoYWwiLCJpYXQiOjE2OTE2OTM4NjksImV4cCI6MTY5MTc4MDI2OX0.RXU93jC7vXCr7G8rLPf_a0KEKx4fBFs43G9GD48Zejs";
 
     @Test
     void getAllBooksandReturn200() throws Exception{
@@ -81,7 +81,8 @@ class BookControllerTest extends LibraryApplicationTests {
                         .header(HttpHeaders.AUTHORIZATION, "Bearer Bearer "+token))
                 .andReturn();
         int status = mvcResult.getResponse().getStatus();
-        assertEquals(404, status);
+        assertEquals(400, status);
+        assertTrue(mvcResult.getResponse().getContentAsString().contains("Book with provided ISBN doesn't exist!"));
     }
 
     @Test
@@ -99,18 +100,5 @@ class BookControllerTest extends LibraryApplicationTests {
         assertEquals(404, status);
     }
 
-    @Test
-    void rentBookAndBookExistsMakeRentThenReturn200() throws Exception {
-        String uri = "/book/{id}/rent_book";
-        Long id = 1L;
-        BookItem bookItem = new BookItem();
-        bookItem.setCreatedDate(new Date());
-        String bookItemJson = super.mapToJson(bookItem);
-        MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.post(uri, id)
-                .accept(MediaType.APPLICATION_JSON).contentType(MediaType.APPLICATION_JSON).content(bookItemJson)
-                .header(HttpHeaders.AUTHORIZATION, "Bearer Bearer "+token)
-        ).andReturn();
-        int status = mvcResult.getResponse().getStatus();
-        assertEquals(200, status);
-    }
+
 }

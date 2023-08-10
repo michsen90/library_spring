@@ -70,9 +70,9 @@ export class API{
             }});
     }
 
-    static async rentBook(id, bookItem){
-        const token = sessionStorage.getItem('Authorization');
-        return await axios.post(`http://localhost:8080/book/${id}/rent_book`, JSON.stringify(bookItem), {
+    static async rentBook(bookItemId, rentBookRequest){
+      const token = sessionStorage.getItem('Authorization');
+        return await axios.post(`http://localhost:8080/book/rent_book/${bookItemId}`, JSON.stringify(rentBookRequest), {
             headers: {
               'Content-Type': 'application/json',
               'Authorization': `Bearer Bearer ${token}`

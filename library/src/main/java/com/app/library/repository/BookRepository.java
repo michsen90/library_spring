@@ -13,5 +13,7 @@ public interface BookRepository extends JpaRepository<Book, Long> {
     Optional<Book> findByISBN(String ISBN);
     Book findBookById(Long id);
 
+    Boolean existsByISBN(String ISBN);
+
     Optional<List<Book>> findByAuthors(Author author);
 }

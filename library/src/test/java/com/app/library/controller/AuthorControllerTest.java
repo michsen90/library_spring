@@ -12,7 +12,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class AuthorControllerTest extends LibraryApplicationTests {
 
-    String token = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJtaWNoYWwiLCJpYXQiOjE2OTEwMDMzOTMsImV4cCI6MTY5MTA4OTc5M30.3Ksg2q8drnhkMEa2EyLaZPY8ZPuL8nXxDBt-8MI2Wco";
+    String token = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJtaWNoYWwiLCJpYXQiOjE2OTE2OTM4NjksImV4cCI6MTY5MTc4MDI2OX0.RXU93jC7vXCr7G8rLPf_a0KEKx4fBFs43G9GD48Zejs";
 
     @Test
     void getAllAuthorsAndReturn200() throws Exception{
