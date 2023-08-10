@@ -2,10 +2,9 @@ import React, { useState } from "react";
 import { Button, Col, Form, Row, Table } from "react-bootstrap";
 import { API } from "../api_service";
 
-function RentBook({ handleCloseRentForm, book, reloadBooksList }) {
+function RentBook({ handleCloseRentForm, book, bookItem, updateBooks }) {
 
     const [validated, setValidated] = useState(false);
-    const [rentDate] = useState(new Date());
     const [startDate, setStartDate] = useState('');
     const [endDate, setEndDate] = useState('');
 
@@ -16,9 +15,10 @@ function RentBook({ handleCloseRentForm, book, reloadBooksList }) {
             //todo
         }
         setValidated(true);
-        API.rentBook(book.id, {available: false, rentDate: rentDate, startDate: startDate, endDate: endDate})
+        API.rentBook(bookItem.id, {startDate: startDate, endDate: endDate, userId: sessionStorage.getItem("userId")})
             .then(response => {
-                reloadBooksList();
+                console.log(response);
+                updateBooks();
             })
             .catch(err => console.log(err));
         handleCloseRentForm();

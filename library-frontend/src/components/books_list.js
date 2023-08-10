@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { API } from "../api_service";
-import { Button, Col, Form, FormControl, InputGroup, ListGroup, Modal, Row, Table } from "react-bootstrap";
+import { Button, Col, Form, FormControl, ListGroup, Modal, OverlayTrigger, Row, Table, Tooltip } from "react-bootstrap";
 import RentBook from "./rent_book";
 
 function BooksList() {
@@ -10,6 +10,7 @@ function BooksList() {
     const [word, setWord] = useState('');
     const [selectedBook, setSelectedBook] = useState(null);
     const [showRentForm, setShowRentForm] = useState(false);
+    const [selectedBookItem, setSelectedBookItem] = useState(null);
 
     const updateBooks = () => {
         API.getAllBooks()
@@ -35,9 +36,7 @@ function BooksList() {
         setSelectedBook(book);
     }
 
-    const reloadBooksList = () => {
-        updateBooks();
-    }
+    console.log(books);
 
     return (
         <React.Fragment>
@@ -89,30 +88,54 @@ function BooksList() {
                                     </tr>
                                 </tbody>
                             </Table>
-                            <Row md={3}>
-                                <Col></Col>
-                                <Col>
-                                    {selectedBook.bookItems.map(bookItem => {
-                                        return (
-                                            <InputGroup className="mb-3" style={{ width: "100%" }}>
-                                                <Form.Control
-                                                    value={bookItem.available ? "Available" : "Rented"}
-                                                    disabled
-                                                    style={{ backgroundColor: bookItem.available ? "green" : "red", width: "50%"}}
-                                                />
-                                                <Button
-                                                    variant={bookItem.available ? "outline-success" : "outline-danger"}
-                                                    disabled={!bookItem.available} style={{ width: "50%", cursor: bookItem.available === true ? "pointer" : "cursor-na" }}
-                                                    onClick={handleShowRentForm}
-                                                >
-                                                    Rent book ID: {bookItem.id}
-                                                </Button>
-                                            </InputGroup>
-                                        )
-                                    })}
+                            <Row>
+                                <Table>
 
+                                </Table>
+                            </Row>
+                            <Row>
+                                <Col>
+                                    <Table variant="light" hover bordered striped>
+                                        <thead>
+                                            <tr>
+                                                <th>Status</th>
+                                                <th>Book item ID</th>
+                                                <th>Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {selectedBook.bookItems.map(bookItem => {
+                                                return (
+                                                    <React.Fragment>
+                                                        <OverlayTrigger key={bookItem.id} placement="auto" overlay={
+                                                            <Tooltip id="overlay-top">
+                                                                Expected available date:
+                                                            </Tooltip>
+                                                        }
+                                                        >
+                                                            <tr key={bookItem.id}>
+                                                                <td style={{ color: bookItem.available ? "darkgreen" : "red" }}>{bookItem.available ? "Available" : "Rented"}</td>
+                                                                <td style={{ color: bookItem.available ? "darkgreen" : "red" }}>ID: {bookItem.id}</td>
+                                                                <td>
+                                                                    <Button
+                                                                        variant={bookItem.available ? "outline-success" : "outline-danger"}
+                                                                        disabled={!bookItem.available} style={{ width: "50%", cursor: bookItem.available === true ? "pointer" : "cursor-na" }}
+                                                                        onClick={() => {
+                                                                            setSelectedBookItem(bookItem);
+                                                                            handleShowRentForm();
+                                                                        }}
+                                                                    >
+                                                                        Rent book
+                                                                    </Button>
+                                                                </td>
+                                                            </tr>
+                                                        </OverlayTrigger>
+                                                    </React.Fragment>
+                                                )
+                                            })}
+                                        </tbody>
+                                    </Table>
                                 </Col>
-                                <Col></Col>
                             </Row>
 
                         </React.Fragment>
@@ -124,7 +147,7 @@ function BooksList() {
                     <Modal.Title>Rent a book:</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
-                    <RentBook handleCloseRentForm={handleCloseRentForm} book={selectedBook} reloadBooksList={reloadBooksList} />
+                    <RentBook handleCloseRentForm={handleCloseRentForm} book={selectedBook} bookItem={selectedBookItem} updateBooks={updateBooks} />
                 </Modal.Body>
                 <Modal.Footer>
                     <Button variant="info" onClick={handleCloseRentForm}>Close</Button>

@@ -20,6 +20,9 @@ public class BookItem {
     @JoinColumn(name = "book_id")
     private Book book;
 
+    @OneToOne(mappedBy = "bookItem")
+    private RentBook rentBook;
+
     public BookItem() {
         this.available = true;
         this.createdDate = new Date();

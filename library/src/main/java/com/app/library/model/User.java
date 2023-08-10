@@ -3,7 +3,9 @@ package com.app.library.model;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -29,12 +31,16 @@ public class User {
     @JoinTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
     private Set<Role> roles = new HashSet<>();
 
+    @OneToMany(cascade = CascadeType.ALL)
+    private List<RentBook> rentBooks;
+
     public User(){}
 
     public User(final String username, final String email, final String password) {
         this.username = username;
         this.email = email;
         this.password = password;
+        this.rentBooks = new ArrayList<>();
     }
 
     public Long getId() {
@@ -75,5 +81,17 @@ public class User {
 
     public void setRoles(final Set<Role> roles) {
         this.roles = roles;
+    }
+
+    public List<RentBook> getRentBooks() {
+        return rentBooks;
+    }
+
+    public void setRentBooks(final List<RentBook> rentBooks) {
+        this.rentBooks = rentBooks;
+    }
+
+    public void addRentBook(final RentBook rentBook){
+        this.rentBooks.add(rentBook);
     }
 }

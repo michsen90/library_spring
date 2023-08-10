@@ -65,9 +65,7 @@ public class ModeratorController {
 
     @PostMapping("/book")
     public ResponseEntity<?> addBook(@RequestBody Book newBook){
-        Optional<Book> searchedBook = bookRepository.findByISBN(newBook.getISBN());
-        if (!searchedBook.equals(Optional.empty())){
-//            return ResponseEntity.badRequest().build();
+        if (bookRepository.existsByISBN(newBook.getISBN())){
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Book already exist!");
         }
         Book savedBook = bookService.createBook(newBook);

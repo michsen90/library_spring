@@ -33,7 +33,7 @@ class ModeratorControllerTest extends LibraryApplicationTests {
     @Autowired
     BookRepository bookRepository;
 
-    String token = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJtaWNoYWwiLCJpYXQiOjE2OTEzNTIzMjgsImV4cCI6MTY5MTQzODcyOH0.4yenqhznMqhpKLQGek9mcnfNgJKmvph9Tv5J7Q-_4cA";
+    String token = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJtaWNoYWwiLCJpYXQiOjE2OTE2OTM4NjksImV4cCI6MTY5MTc4MDI2OX0.RXU93jC7vXCr7G8rLPf_a0KEKx4fBFs43G9GD48Zejs";
 
     @Test
     void createAuthorAndAuthorExistThenReturn400() throws Exception{
@@ -119,9 +119,9 @@ class ModeratorControllerTest extends LibraryApplicationTests {
         String uri = "/moderator/book";
         Book book = new Book();
         Set<Category> categories = new HashSet<>();
-        categories.add(categoryRepository.findById(1L).orElseThrow());
+        categories.add(categoryRepository.findById(1L).get());
         Set<Author> authors = new HashSet<>();
-        authors.add(authorRepository.findById(1L).orElseThrow());
+        authors.add(authorRepository.findById(1L).get());
         book.setTitle("Book to delete");
         book.setISBN("999999999999999");
         book.setAuthors(authors);
@@ -237,15 +237,21 @@ class ModeratorControllerTest extends LibraryApplicationTests {
     @Transactional
     void updateCategoriesForBookAndReturn200() throws Exception{
         Book bookToUpdate = new Book();
-        Optional<Book> searchedBook = bookRepository.findByISBN("999999999999999");
-        searchedBook.ifPresent(book -> {
-            bookToUpdate.setId(book.getId());
-            bookToUpdate.setTitle(book.getTitle());
-            bookToUpdate.setISBN(book.getISBN());
-            bookToUpdate.setAuthors(book.getAuthors());
-            bookToUpdate.setCategories(book.getCategories());
-            bookToUpdate.addCategory(categoryRepository.findById(2L).orElseThrow());
-        });
+        if(!bookRepository.existsByISBN("999999999999999")){
+            Book bookForUpdating = new Book();
+            Set<Author> authors = new HashSet<>();
+            authors.add(authorRepository.findById(1L).orElseThrow());
+            Set<Category> categories = new HashSet<>();
+            categories.add(categoryRepository.findById(1L).get());
+            bookForUpdating.setTitle("Book to update");
+            bookForUpdating.setISBN("22222222222222222");
+            bookForUpdating.setAuthors(authors);
+            bookForUpdating.setCategories(categories);
+            bookToUpdate = bookRepository.save(bookForUpdating);
+        } else {
+            bookToUpdate = bookRepository.findByISBN("999999999999999").get();
+        }
+        bookToUpdate.addCategory(categoryRepository.findById(3L).get());
         String uri = "/moderator/book/categories/{id}";
 
         String inputJson = super.mapToJson(bookToUpdate);
@@ -257,7 +263,7 @@ class ModeratorControllerTest extends LibraryApplicationTests {
                 .andReturn();
         int status = mvcResult.getResponse().getStatus();
         assertEquals(200, status);
-        assertTrue(mvcResult.getResponse().getContentAsString().contains("CLASSIC"));
+        assertTrue(mvcResult.getResponse().getContentAsString().contains("COMIC"));
     }
 
     @Test
@@ -296,15 +302,7 @@ class ModeratorControllerTest extends LibraryApplicationTests {
 
         String uri = "/moderator/book/{id}";
         Book book = new Book();
-        bookRepository.findByISBN("999999999999999").ifPresent(book1 -> {
-            book.setTitle(book1.getTitle());
-            book.setISBN(book1.getISBN());
-            book.setAuthors(book1.getAuthors());
-            book.setId(book1.getId());
-            book.setCategories(book1.getCategories());
-            book.setBookItems(book1.getBookItems());
-        });
-        if (book.getId() == null){
+        if (!bookRepository.existsByISBN("999999999999999")){
             Set<Category> categories = new HashSet<>();
             categories.add(categoryRepository.findById(1L).orElseThrow());
             Set<Author> authors = new HashSet<>();
@@ -313,7 +311,9 @@ class ModeratorControllerTest extends LibraryApplicationTests {
             book.setISBN("999999999999999");
             book.setAuthors(authors);
             book.setCategories(categories);
+            bookRepository.save(book);
         }
+        book = bookRepository.findByISBN("999999999999999").get();
         MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.delete(uri, book.getId())
                         .header(HttpHeaders.AUTHORIZATION, "Bearer Bearer "+token)
                         .accept(MediaType.APPLICATION_JSON)
